@@ -24,8 +24,7 @@
   "logging": {
     "fileLoggingMode": "debugOnly",
     "logLevel": {
-      "Function.MyFunction": "Information",
-      "default": "None"
+      "default": "Information"
     },
     "applicationInsights": {
       "samplingSettings": {
