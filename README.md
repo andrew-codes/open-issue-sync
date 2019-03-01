@@ -25,3 +25,14 @@ This package is meant to use the webhooked package within a FaaS; deployed to Az
 ### Handler Packages
 
 Handler modules are **async** functions that accept a request object. They are responsible handling/doing something with each received webhook request. Although they receive every request, they are not required to act upon it.
+
+## Adding Dependencies
+
+The project leverages yarn and lerna. To add a new dependency to one of the packages, you can use the command like this:
+
+```shell
+yarn lerna add --scope @andrew-codes/pkg-to-add-to pkg-to-add
+
+# add dependencies between local packages
+yarn lerna add --scope @andrew-codes/pkg-to-add-to @andrew-codes/pkg-to-add
+```
