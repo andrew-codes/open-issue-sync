@@ -5,5 +5,8 @@
   "main": "src/index.js",
   "author": "Andrew Smith <andrew@andrew.codes>",
   "license": "MIT",
-  "private": true
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  }
 }

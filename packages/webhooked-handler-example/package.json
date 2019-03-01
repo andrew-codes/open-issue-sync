@@ -5,7 +5,10 @@
   "main": "src/index.js",
   "author": "Andrew Smith <andrew@andrew.codes>",
   "license": "MIT",
-  "private": true,
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@andrew-codes/webhooked-github-request-matchers": "^0.0.1"
   }
