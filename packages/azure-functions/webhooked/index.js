@@ -5,7 +5,7 @@ module.exports = async function(context, req) {
   context.log(req.body);
   try {
     const responses = await webhooked({
-      handlers: ['@andrew-codes/github-issue-tester'],
+      handlers: ['@andrew-codes/webhooked-handler-example'],
     }).handle(req);
     context.log(responses);
     context.res = { status: 200 };

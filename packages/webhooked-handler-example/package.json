@@ -1,5 +1,5 @@
 {
-  "name": "@andrew-codes/github-issue-tester",
+  "name": "@andrew-codes/webhooked-handler-example",
   "repository": "git@github.com:andrew-codes/open-issue-sync.git",
   "version": "0.0.1",
   "main": "src/index.js",
