@@ -1,4 +1,9 @@
-module.exports = (req, log) =>
-  new Promise((resolve, reject) => {
-    resolve(req.headers['x-github-event']);
-  });
+const {
+  isRequestFromGithub,
+} = require('@andrew-codes/webhooked-github-request-matchers');
+
+module.exports = async req => {
+  if (isRequestFromGithub(req)) {
+    console.log('Do something, I am a request from Github');
+  }
+};

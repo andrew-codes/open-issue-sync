@@ -2,7 +2,6 @@ const webhooked = require('@andrew-codes/webhooked');
 
 module.exports = async function(context, req) {
   context.log('JavaScript HTTP trigger function processed a request.');
-  context.log(req.body);
   try {
     const responses = await webhooked({
       handlers: ['@andrew-codes/webhooked-handler-example'],

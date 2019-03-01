@@ -1,12 +1,9 @@
 {
-  "name": "@andrew-codes/webhooked-handler-example",
+  "name": "@andrew-codes/webhooked-github-request-matchers",
   "repository": "git@github.com:andrew-codes/open-issue-sync.git",
   "version": "0.0.1",
   "main": "src/index.js",
   "author": "Andrew Smith <andrew@andrew.codes>",
   "license": "MIT",
-  "private": true,
-  "dependencies": {
-    "@andrew-codes/webhooked-github-request-matchers": "^0.0.1"
-  }
+  "private": true
 }
