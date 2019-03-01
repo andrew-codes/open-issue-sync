@@ -1,0 +1,26 @@
+{
+  "name": "open-issue-sync",
+  "version": "0.0.1",
+  "description": "\"Maintain open source issues with VersionOne.\"",
+  "repository": "git@github.com:andrew-codes/open-issue-sync.git",
+  "author": "Andrew Smith <andrew@andrew.codes>",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=10.15.1",
+    "yarn": "^1.3.2"
+  },
+  "scripts": {
+    "bootstrap": "lerna bootstrap",
+    "start": "lerna exec --scope @andrew-codes/azure-functions \"func host start --build\"",
+    "test": "jest"
+  },
+  "dependencies": {
+    "jest": "^24.1.0",
+    "jest-cli": "^24.1.0",
+    "lerna": "^3.13.1"
+  }
+}

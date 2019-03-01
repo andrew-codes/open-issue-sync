@@ -1,0 +1,16 @@
+{
+  "name": "@andrew-codes/azure-functions",
+  "repository": "git@github.com:andrew-codes/open-issue-sync.git",
+  "version": "0.0.1",
+  "main": "src/index.js",
+  "author": "Andrew Smith <andrew@andrew.codes>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "@andrew-codes/github-issue-tester": "^0.0.1",
+    "azure-functions-core-tools": "^2.4.419"
+  },
+  "dependencies": {
+    "@andrew-codes/webhooked": "^0.0.1"
+  }
+}
