@@ -4,7 +4,7 @@ module.exports = async function(context, req) {
   context.log('JavaScript HTTP trigger function processed a request.');
   try {
     const responses = await webhooked({
-      handlers: ['@andrew-codes/webhooked-handler-example'],
+      plugins: ['@andrew-codes/webhooked-plugin-example'],
     }).handle(req);
     context.log(responses);
     context.res = { status: 200 };

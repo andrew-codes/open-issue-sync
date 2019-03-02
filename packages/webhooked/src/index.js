@@ -1,22 +1,22 @@
-module.exports = ({ handlers }) => {
+module.exports = ({ plugins }) => {
   return {
     handle: async req => {
-      return handlers
-        .map(moduleName => {
-          if (!Array.isArray(moduleName)) {
+      return plugins
+        .map(pluginName => {
+          if (!Array.isArray(pluginName)) {
             return {
-              handlerFn: require(moduleName),
+              pluginFn: require(pluginName),
             };
           }
-          const [module, options] = moduleName;
-          const handlerFn = require(module);
-          return { handlerFn, options };
+          const [module, options] = pluginName;
+          const pluginFn = require(module);
+          return { pluginFn, options };
         })
-        .map(({ handlerFn, options }) => {
+        .map(({ pluginFn, options }) => {
           if (options) {
-            return handlerFn(req, options);
+            return pluginFn(req, options);
           }
-          return handlerFn(req);
+          return pluginFn(req);
         });
     },
   };

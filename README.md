@@ -17,15 +17,15 @@ Plug-able webhook handler. Primary use case is to sync GitHub issues and Version
 
 ### Webhooked Package
 
-`@andrew-codes/webhooked` is the main NPM package. Webhooked accepts a configuration object with an array of handlers. Each handler is a package or string resolvable to a handler.
+`@andrew-codes/webhooked` is the main NPM package. Webhooked accepts a configuration object with an array of plugins. Each plugin is a package or string resolvable to a plugin.
 
 ### Azure-Functions
 
 This package is meant to use the webhooked package within a FaaS; deployed to Azure. It is a typical Azure Functions project which consumes `@andrew-codes/webhooked`.
 
-### Handler Packages
+### Plugin Packages
 
-Handler modules are **async** functions that accept a request object. They are responsible handling/doing something with each received webhook request. Although they receive every request, they are not required to act upon it.
+Plugin modules are **async** functions that accept a request object. They are responsible handling/doing something with each received webhook request. Although they receive every request, they are not required to act upon it.
 
 ## Adding Dependencies
 
