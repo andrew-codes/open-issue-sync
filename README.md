@@ -11,6 +11,7 @@ Plug-able webhook handler. Primary use case is to sync GitHub issues and Version
 - `yarn && yarn bootstrap`
 - `yarn start`; look in console for address
 - `yarn test`; runs tests
+- `yarn lint`
 
 ## Packages Overview
 

@@ -16,11 +16,21 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "start": "lerna exec --scope @andrew-codes/azure-functions \"func host start --build\"",
-    "test": "jest"
+    "test": "jest",
+    "lint": "eslint --print-config .eslintrc.json | eslint-config-prettier-check && eslint ."
   },
   "dependencies": {
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.14.1",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-plugin-jest": "^22.3.0",
+    "eslint-plugin-node": "^8.0.1",
+    "eslint-plugin-prettier": "^3.0.1",
     "jest": "^24.1.0",
     "jest-cli": "^24.1.0",
-    "lerna": "^3.13.1"
+    "lerna": "^3.13.1",
+    "node-fetch": "^2.3.0",
+    "prettier": "^1.16.4",
+    "shelljs": "^0.8.3"
   }
 }

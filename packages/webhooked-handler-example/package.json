@@ -9,6 +9,10 @@
   "publishConfig": {
     "access": "public"
   },
+  "engines": {
+    "node": ">=10.15.1",
+    "yarn": "^1.3.2"
+  },
   "dependencies": {
     "@andrew-codes/webhooked-github-request-matchers": "^0.0.1"
   }
