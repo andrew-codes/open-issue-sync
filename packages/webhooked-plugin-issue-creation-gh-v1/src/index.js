@@ -41,10 +41,10 @@ module.exports = async (req, options) => {
       links: { name: 'Github Issue', url: req.body.issue.url },
       name: req.body.issue.title,
       scope,
-      taggedWith: [`github:${req.body.issue.number}`],
+      taggedWith: [`github-${req.body.issue.number}`, 'github'],
       team,
     });
-    issues.editIssue(req.body.issue.number, { labels: [`'v1-${_oid}`] });
+    issues.editIssue(req.body.issue.number, { labels: [`v1-${_oid}`, 'v1'] });
     return;
   }
 };
@@ -100,7 +100,11 @@ function validateOptions(options) {
       ),
     )
     .concat(
-      validatePropsAreStrings(options, ['scope'], p => `Invalid ${p} option`),
+      validatePropsAreStrings(
+        options,
+        ['scope', 'webhookId'],
+        p => `Invalid ${p} option`,
+      ),
     );
 
   return errors;
