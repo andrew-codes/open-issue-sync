@@ -23,3 +23,14 @@ test('options can be provided which will be provided to plugins', async () => {
 
   expect(testHandler2).toBeCalledWith(fakeRequest, options);
 });
+
+test('options can be bundled and applied as one or more preset', async () => {
+  const fakeRequest = { fake: 'request' };
+  const options = { someOption: 'value' };
+  await webhooked({
+    presets: ['../testing/testPlugin', ['../testing/testPlugin2', options]],
+  }).handle(fakeRequest);
+
+  expect(testHandler).toBeCalledWith(fakeRequest);
+  expect(testHandler2).toBeCalledWith(fakeRequest, options);
+});

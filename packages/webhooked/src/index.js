@@ -1,7 +1,8 @@
-module.exports = ({ plugins }) => {
+module.exports = ({ plugins = [], presets = [] }) => {
   return {
     handle: async req => {
-      return plugins
+      return presets
+        .concat(plugins)
         .map(pluginName => {
           if (!Array.isArray(pluginName)) {
             return {
