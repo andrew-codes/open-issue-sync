@@ -14,6 +14,15 @@ test('validateObjectProps returns array of messages created by applyMessage and 
   ).toContain('invalid prop2');
 });
 
+test('defaults to return propName as message when invalid', () => {
+  const subject = {
+    prop1: 'value',
+  };
+  expect(validateObjectProps(subject, ['prop2'], val => !!val)).toContain(
+    'prop2',
+  );
+});
+
 test('can validate numeric props', () => {
   const subject = {
     prop1: 'value',
