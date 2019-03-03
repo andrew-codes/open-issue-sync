@@ -10,12 +10,9 @@ beforeEach(() => {
     handle,
   });
 });
-
 test('configures webhooked and handles request', async () => {
   const request = {
-    headers: {
-      'x-github-event': 'issues',
-    },
+    headers: {},
     body: { some: 'json' },
   };
 
@@ -24,4 +21,14 @@ test('configures webhooked and handles request', async () => {
   expect(webhooked).toBeCalledTimes(1);
   expect(handle).toBeCalledWith(request);
   expect(context.res.status).toEqual(200);
+});
+
+test('responds with a 500 status on error', async () => {
+  const request = {};
+  webhooked.mockImplementation(() => {
+    throw new Error('failure');
+  });
+  await httpFunction(context, request);
+
+  expect(context.res.status).toEqual(500);
 });

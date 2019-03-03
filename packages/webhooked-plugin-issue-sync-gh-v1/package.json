@@ -1,5 +1,5 @@
 {
-  "name": "@andrew-codes/webhooked-plugin-gh-issue-labeled-to-v1",
+  "name": "@andrew-codes/webhooked-plugin-issue-sync-gh-v1",
   "repository": "git@github.com:andrew-codes/open-issue-sync.git",
   "version": "0.0.1",
   "main": "src/index.js",
@@ -16,7 +16,11 @@
   "dependencies": {
     "@andrew-codes/v1sdk-fetch-connector": "^0.0.1",
     "@andrew-codes/webhooked-github-request-matchers": "^0.0.1",
+    "@andrew-codes/webhooked-utils": "^0.0.1",
+    "@andrew-codes/webhooked-v1-request-matchers": "^0.0.1",
     "fetch-node": "^0.0.1",
+    "github-api": "^3.0.0",
+    "lodash": "^4.17.11",
     "v1sdk": "^2.3.0"
   }
 }
