@@ -1,13 +1,7 @@
-const { createHmac } = require('crypto');
+const isRequestFromGithub = require('./isRequestFromGithub');
 
-const isRequestFromGithub = (req, hmacKey) =>
-  req.headers['x-hub-signature'] ===
-  `sha1=${createHmac('sha1', hmacKey)
-    .update(JSON.stringify(req.body))
-    .digest('hex')}`;
-
-const matchesActions = (req, actions = []) => {
-  if (!isRequestFromGithub(req)) {
+const matchesActions = (req, actions = [], key = '') => {
+  if (!isRequestFromGithub(req, key)) {
     return false;
   }
   return Boolean(actions.find(action => req.body.action === action));

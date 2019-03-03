@@ -1,32 +1,44 @@
 jest
   .mock('@andrew-codes/v1sdk-fetch-connector')
   .mock('v1sdk')
-  .mock('github-api');
+  .mock('github-api')
+  .mock('@andrew-codes/webhooked-github-request-matchers')
+  .mock('@andrew-codes/webhooked-v1-request-matchers');
 const { when } = require('jest-when');
 const plugin = require('../src/index');
 const connector = require('@andrew-codes/v1sdk-fetch-connector');
+const ghMatcher = require('@andrew-codes/webhooked-github-request-matchers');
+const v1Matcher = require('@andrew-codes/webhooked-v1-request-matchers');
 const github = require('github-api');
-const ghCreateIssue = jest.fn();
-const ghEditIssue = jest.fn();
-const ghToken = 'ghtoken';
-when(github)
-  .calledWith({ token: ghToken })
-  .mockReturnValue({
-    getIssues: jest
-      .fn()
-      .mockReturnValue({ createIssue: ghCreateIssue, editIssue: ghEditIssue }),
+
+beforeEach(() => {
+  jest.resetAllMocks();
+  this.ghCreateIssue = jest.fn();
+  this.ghEditIssue = jest.fn();
+  github.mockImplementation(({ token }) => {
+    if (token === 'ghToken') {
+      return {
+        getIssues: jest.fn().mockReturnValue({
+          createIssue: this.ghCreateIssue,
+          editIssue: this.ghEditIssue,
+        }),
+      };
+    }
+    return {};
   });
-const v1Create = jest.fn();
-const v1Update = jest.fn();
-const connectedSdk = jest.fn();
-const sdkConstructor = jest.fn();
-connectedSdk.mockReturnValue({
-  withAccessToken: jest
-    .fn()
-    .mockReturnValue({ create: v1Create, update: v1Update }),
+  this.v1Create = jest.fn();
+  this.v1Update = jest.fn();
+  this.sdkConstructor = jest.fn();
+  this.withAccessToken = jest.fn();
+  when(this.withAccessToken)
+    .calledWith('v1token')
+    .mockReturnValue({ create: this.v1Create, update: this.v1Update });
+  this.connectedSdk = jest.fn().mockReturnValue({
+    withAccessToken: this.withAccessToken,
+  });
+  this.sdkConstructor.mockReturnValue(this.connectedSdk);
+  connector.mockReturnValue(this.sdkConstructor);
 });
-sdkConstructor.mockReturnValue(connectedSdk);
-connector.mockReturnValue(sdkConstructor);
 
 test('throws error if required options are not provided', async () => {
   try {
@@ -58,6 +70,9 @@ test('throws error if when there is invalid connection information for v1 and/or
     expect(error.invalidOptions).toContain(
       'Invalid gh connection token option',
     );
+    expect(error.invalidOptions).toContain(
+      'Invalid gh connection hmacKey option',
+    );
     expect(error.invalidOptions).toContain('Invalid v1 connection host option');
     expect(error.invalidOptions).toContain(
       'Invalid v1 connection instance option',
@@ -65,6 +80,9 @@ test('throws error if when there is invalid connection information for v1 and/or
     expect(error.invalidOptions).toContain('Invalid v1 connection port option');
     expect(error.invalidOptions).toContain(
       'Invalid v1 connection token option',
+    );
+    expect(error.invalidOptions).toContain(
+      'Invalid v1 connection hmacKey option',
     );
   }
 });
@@ -112,13 +130,18 @@ test('labeling a gh issue as a story will create a Story asset V1 in the configu
   const team = 'Team:102';
   const _oid = 'Story:1234';
   const issueNumber = 123;
-  v1Create.mockReturnValue({ _oid });
+  const request = createGhRequest('labeled', {
+    issue: { number: issueNumber, title: name, url },
+    label: { name: 'story' },
+  });
+  this.v1Create.mockReturnValue({ _oid });
+  v1Matcher.isRequestFromV1.mockReturnValue(false);
+  when(ghMatcher.matchesActions)
+    .calledWith(request, ['labeled'], 'ghKey')
+    .mockReturnValue(true);
 
   await plugin(
-    createGhRequest('labeled', {
-      issue: { number: issueNumber, title: name, url },
-      label: { name: 'story' },
-    }),
+    request,
     createOptionsWithValidConnection({
       assetToLabel: { Defect: 'defect', Story: 'story' },
       scope,
@@ -127,14 +150,14 @@ test('labeling a gh issue as a story will create a Story asset V1 in the configu
     }),
   );
 
-  expect(v1Create).toBeCalledWith('Story', {
+  expect(this.v1Create).toBeCalledWith('Story', {
     links: { name: 'Github Issue', url },
     name,
     scope,
     taggedWith: [`github-${issueNumber}`, 'github'],
     team,
   });
-  expect(ghEditIssue).toBeCalledWith(issueNumber, {
+  expect(this.ghEditIssue).toBeCalledWith(issueNumber, {
     labels: [`v1-${_oid}`, 'v1'],
   });
 });
@@ -146,13 +169,18 @@ test('labeling a gh issue as a defect will create a Defect asset V1 in the confi
   const team = 'Team:102';
   const _oid = 'Defect:1234';
   const issueNumber = 123;
-  v1Create.mockReturnValue({ _oid });
+  const request = createGhRequest('labeled', {
+    issue: { number: issueNumber, title: name, url },
+    label: { name: 'defect' },
+  });
+  this.v1Create.mockReturnValue({ _oid });
+  v1Matcher.isRequestFromV1.mockReturnValue(false);
+  when(ghMatcher.matchesActions)
+    .calledWith(request, ['labeled'], 'ghKey')
+    .mockReturnValue(true);
 
   await plugin(
-    createGhRequest('labeled', {
-      issue: { number: issueNumber, title: name, url },
-      label: { name: 'defect' },
-    }),
+    request,
     createOptionsWithValidConnection({
       assetToLabel: { Defect: 'defect', Story: 'story' },
       scope,
@@ -161,14 +189,14 @@ test('labeling a gh issue as a defect will create a Defect asset V1 in the confi
     }),
   );
 
-  expect(v1Create).toBeCalledWith('Defect', {
+  expect(this.v1Create).toBeCalledWith('Defect', {
     links: { name: 'Github Issue', url },
     name,
     scope,
     taggedWith: [`github-${issueNumber}`, 'github'],
     team,
   });
-  expect(ghEditIssue).toBeCalledWith(issueNumber, {
+  expect(this.ghEditIssue).toBeCalledWith(issueNumber, {
     labels: [`v1-${_oid}`, 'v1'],
   });
 });
@@ -181,21 +209,28 @@ test('tagging a Story or Defect already containing a github issue identifier wit
   const description = 'defect description';
   const issueNumber = '4';
   const url = 'issue url';
-  ghCreateIssue.mockReturnValue(Promise.resolve({ number: issueNumber, url }));
+  const request = createV1Request('AssetChanged', webhookId, {
+    targetAsset: { _oid, assetType: 'Story' },
+    changes: [{ name: 'TaggedWith', new: 'github' }],
+    snapshot: [
+      {
+        _oid,
+        Name: name,
+        Description: description,
+        taggedWith: [`github-${issueNumber}`],
+      },
+    ],
+  });
+  this.ghCreateIssue.mockReturnValue(
+    Promise.resolve({ number: issueNumber, url }),
+  );
+  when(v1Matcher.isRequestFromV1)
+    .calledWith(request, 'v1Key')
+    .mockReturnValue(true);
+  ghMatcher.matchesActions.mockReturnValue(false);
 
   await plugin(
-    createV1Request('AssetChanged', webhookId, {
-      targetAsset: { _oid, assetType: 'Story' },
-      changes: [{ name: 'TaggedWith', new: 'github' }],
-      snapshot: [
-        {
-          _oid,
-          Name: name,
-          Description: description,
-          taggedWith: [`github-${issueNumber}`],
-        },
-      ],
-    }),
+    request,
     createOptionsWithValidConnection({
       assetToLabel: { Defect: 'defect', Story: 'story' },
       scope,
@@ -203,28 +238,40 @@ test('tagging a Story or Defect already containing a github issue identifier wit
     }),
   );
 
-  expect(ghCreateIssue).not.toBeCalled();
-  expect(v1Update).not.toBeCalled();
+  expect(this.ghCreateIssue).not.toBeCalled();
+  expect(this.v1Update).not.toBeCalled();
 });
 
-test('tagging a Story, that is not tagged with a github issue identifier, with github will create a new github issue, name it, describe it, label it with the asset oid, and add the created issue identifier to the asset along with a link to the created issue', async () => {
-  const _oid = 'Story:1234';
+test('tagging a Story or Defect, that is not tagged with a github issue identifier, with github will create a new github issue, name it, describe it, label it with the asset oid, and add the created issue identifier to the asset along with a link to the created issue', async () => {
+  const _oid = 'Story:12345';
   const scope = 'scope';
   const webhookId = 'v1 payload identifier';
   const name = 'defect name';
-  const description = 'defect description';
+  const description = 'story description';
   const issueNumber = '4';
   const url = 'issue url';
-  ghCreateIssue.mockReturnValue(Promise.resolve({ number: issueNumber, url }));
+  const request = createV1Request('AssetChanged', webhookId, {
+    targetAsset: { _oid, assetType: 'Story' },
+    changes: [{ name: 'TaggedWith', new: 'github' }],
+    snapshot: [
+      {
+        _oid,
+        Name: name,
+        Description: description,
+        taggedWith: ['github'],
+      },
+    ],
+  });
+  this.ghCreateIssue.mockReturnValue(
+    Promise.resolve({ number: issueNumber, url }),
+  );
+  when(v1Matcher.isRequestFromV1)
+    .calledWith(request, 'v1Key')
+    .mockReturnValue(true);
+  ghMatcher.matchesActions.mockReturnValue(false);
 
   await plugin(
-    createV1Request('AssetChanged', webhookId, {
-      targetAsset: { _oid, assetType: 'Story' },
-      changes: [{ name: 'TaggedWith', new: 'github' }],
-      snapshot: [
-        { _oid, Name: name, Description: description, taggedWith: [] },
-      ],
-    }),
+    request,
     createOptionsWithValidConnection({
       assetToLabel: { Defect: 'defect', Story: 'story' },
       scope,
@@ -232,14 +279,14 @@ test('tagging a Story, that is not tagged with a github issue identifier, with g
     }),
   );
 
-  expect(ghCreateIssue).toBeCalledWith({
+  expect(this.ghCreateIssue).toBeCalledWith({
     title: name,
     description,
     labels: [`v1-${_oid}`, 'v1'],
   });
-  expect(v1Update).toBeCalledWith(_oid, {
-    taggedWith: [`github-${issueNumber}`],
-    links: { name: 'Github Issue', url },
+  expect(this.v1Update).toBeCalledWith(_oid, {
+    taggedWith: ['github', `github-${issueNumber}`],
+    links: [{ name: 'Github Issue', url }],
   });
 });
 
@@ -251,22 +298,36 @@ test('V1 payloads with multiple changed assets will create github issues only fo
   const description = 'story description';
   const issueNumber = '4';
   const url = 'issue url';
-  ghCreateIssue.mockReturnValue(Promise.resolve({ number: issueNumber, url }));
-
-  await plugin(
-    createV1Request({
+  const request = {
+    body: {
       events: [
         {
-          eventType: 'AssetChanged',
+          eventType: 'AssetCreated',
           webhookId,
           targetAsset: {
-            _oid: 'Defect:12345',
+            _oid: 'Defect:1',
             assetType: 'Defect',
           },
           changes: [{ name: 'Name', new: 'ignored asset' }],
           snapshot: [
             {
-              _oid: 'Defect:12345',
+              _oid: 'Defect:1',
+              Name: 'ignored asset',
+              taggedWith: [],
+            },
+          ],
+        },
+        {
+          eventType: 'AssetChanged',
+          webhookId,
+          targetAsset: {
+            _oid: 'Defect:2',
+            assetType: 'Defect',
+          },
+          changes: [{ name: 'Name', new: 'ignored asset' }],
+          snapshot: [
+            {
+              _oid: 'Defect:2',
               Name: 'ignored asset',
               taggedWith: [],
             },
@@ -288,7 +349,7 @@ test('V1 payloads with multiple changed assets will create github issues only fo
           ],
           snapshot: [
             {
-              _oid: _oid,
+              _oid,
               Name: name,
               Description: description,
               taggedWith: ['github'],
@@ -299,7 +360,7 @@ test('V1 payloads with multiple changed assets will create github issues only fo
           eventType: 'AssetChanged',
           webhookId,
           targetAsset: {
-            _oid: 'Story:123',
+            _oid: 'Story:11',
             assetType: 'Story',
           },
           changes: [
@@ -311,14 +372,24 @@ test('V1 payloads with multiple changed assets will create github issues only fo
           ],
           snapshot: [
             {
-              _oid: 'Defect:12345',
+              _oid: 'Story:11',
               Name: 'ignored asset',
               taggedWith: ['github', 'github-456'],
             },
           ],
         },
       ],
-    }),
+    },
+  };
+  this.ghCreateIssue.mockReturnValue(
+    Promise.resolve({ number: issueNumber, url }),
+  );
+  when(v1Matcher.isRequestFromV1)
+    .calledWith(request, 'v1Key')
+    .mockReturnValue(true);
+
+  await plugin(
+    request,
     createOptionsWithValidConnection({
       assetToLabel: { Defect: 'defect', Story: 'story' },
       scope,
@@ -326,26 +397,19 @@ test('V1 payloads with multiple changed assets will create github issues only fo
     }),
   );
 
-  expect(ghCreateIssue).toBeCalledWith({
+  expect(this.ghCreateIssue).toBeCalledWith({
     title: name,
     description,
     labels: [`v1-${_oid}`, 'v1'],
   });
-  expect(v1Update).toBeCalledWith(_oid, {
-    taggedWith: [`github-${issueNumber}`],
-    links: { name: 'Github Issue', url },
+  expect(this.v1Update).toBeCalledWith(_oid, {
+    taggedWith: ['github', `github-${issueNumber}`],
+    links: [{ name: 'Github Issue', url }],
   });
-});
-
-test('tagging a Defect, that is not tagged with a github issue identifier, with github will create a new github issue, name it, describe it, label it with the asset oid, and add the created issue identifier to the asset along with a link to the created issue', async () => {
-  throw new Error('Not Implemented');
 });
 
 function createGhRequest(action, data = {}) {
   return {
-    headers: {
-      'x-github-event': 'issues',
-    },
     body: {
       action,
       ...data,
@@ -356,6 +420,7 @@ function createOptionsWithValidConnection(data = {}) {
   return {
     connection: {
       v1: {
+        hmacKey: 'v1Key',
         host: 'host',
         instance: 'instance',
         port: 443,
@@ -363,7 +428,8 @@ function createOptionsWithValidConnection(data = {}) {
         token: 'v1token',
       },
       gh: {
-        token: ghToken,
+        hmacKey: 'ghKey',
+        token: 'ghToken',
       },
     },
     ...data,
@@ -371,6 +437,8 @@ function createOptionsWithValidConnection(data = {}) {
 }
 function createV1Request(eventType, webhookId, data = {}) {
   return {
-    events: [{ eventType, webhookId, ...data }],
+    body: {
+      events: [{ eventType, webhookId, ...data }],
+    },
   };
 }

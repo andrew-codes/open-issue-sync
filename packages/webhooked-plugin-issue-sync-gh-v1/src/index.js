@@ -4,6 +4,9 @@ const GitHub = require('github-api');
 const v1sdk = require('v1sdk').default;
 const { isEmpty } = require('lodash');
 const {
+  isRequestFromV1,
+} = require('@andrew-codes/webhooked-v1-request-matchers');
+const {
   matchesActions,
 } = require('@andrew-codes/webhooked-github-request-matchers');
 const {
@@ -18,7 +21,7 @@ module.exports = async (req, options) => {
   const { scope, team } = options;
   const { v1, gh } = options.connection;
   const connectedSdk = fetchConnector(fetch)(v1sdk);
-  const v1api = connectedSdk(
+  const v1Api = connectedSdk(
     v1.host,
     v1.instance,
     v1.port,
@@ -26,7 +29,8 @@ module.exports = async (req, options) => {
   ).withAccessToken(v1.token);
   const ghApi = new GitHub({ token: gh.token });
   const issues = ghApi.getIssues();
-  if (matchesActions(req, ['labeled'])) {
+
+  if (matchesActions(req, ['labeled'], options.connection.gh.hmacKey)) {
     const matchedAssetLabelMapping = Object.entries(options.assetToLabel).find(
       mapping => {
         const [_, value] = mapping;
@@ -37,15 +41,35 @@ module.exports = async (req, options) => {
       return;
     }
     const assetType = matchedAssetLabelMapping[0];
-    const { _oid } = await v1api.create(assetType, {
+    const { _oid } = await v1Api.create(assetType, {
       links: { name: 'Github Issue', url: req.body.issue.url },
       name: req.body.issue.title,
       scope,
       taggedWith: [`github-${req.body.issue.number}`, 'github'],
       team,
     });
-    issues.editIssue(req.body.issue.number, { labels: [`v1-${_oid}`, 'v1'] });
-    return;
+    return await issues.editIssue(req.body.issue.number, {
+      labels: [`v1-${_oid}`, 'v1'],
+    });
+  } else if (isRequestFromV1(req, options.connection.v1.hmacKey)) {
+    return await req.body.events
+      .filter(event => event.eventType === 'AssetChanged')
+      .filter(
+        event =>
+          !isEmpty(event.snapshot[0].taggedWith) &&
+          !event.snapshot[0].taggedWith.find(tag => /^github-\d+$/.test(tag)),
+      )
+      .map(async event => {
+        const { number, url } = await issues.createIssue({
+          title: event.snapshot[0].Name,
+          description: event.snapshot[0].Description,
+          labels: [`v1-${event.snapshot[0]._oid}`, 'v1'],
+        });
+        return await v1Api.update(event.snapshot[0]._oid, {
+          taggedWith: ['github', `github-${number}`],
+          links: [{ name: 'Github Issue', url }],
+        });
+      });
   }
 };
 
@@ -72,14 +96,14 @@ function validateOptions(options) {
       .concat(
         validatePropsAreStrings(
           options.connection.gh,
-          ['token'],
+          ['token', 'hmacKey'],
           p => `Invalid gh connection ${p} option`,
         ),
       )
       .concat(
         validatePropsAreStrings(
           options.connection.v1,
-          ['host', 'instance', 'token'],
+          ['host', 'instance', 'token', 'hmacKey'],
           p => `Invalid v1 connection ${p} option`,
         ),
       )
