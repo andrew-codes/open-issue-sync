@@ -4,9 +4,6 @@ const GitHub = require('github-api');
 const v1sdk = require('v1sdk').default;
 const { isEmpty } = require('lodash');
 const {
-  isRequestFromV1,
-} = require('@andrew-codes/webhooked-v1-request-matchers');
-const {
   matchesActions,
 } = require('@andrew-codes/webhooked-github-request-matchers');
 const {
@@ -51,25 +48,6 @@ module.exports = async (req, options) => {
     return await issues.editIssue(req.body.issue.number, {
       labels: [`v1-${_oid}`, 'v1'],
     });
-  } else if (isRequestFromV1(req, options.connection.v1.hmacKey)) {
-    return await req.body.events
-      .filter(event => event.eventType === 'AssetChanged')
-      .filter(
-        event =>
-          !isEmpty(event.snapshot[0].taggedWith) &&
-          !event.snapshot[0].taggedWith.find(tag => /^github-\d+$/.test(tag)),
-      )
-      .map(async event => {
-        const { number, url } = await issues.createIssue({
-          title: event.snapshot[0].Name,
-          description: event.snapshot[0].Description,
-          labels: [`v1-${event.snapshot[0]._oid}`, 'v1'],
-        });
-        return await v1Api.update(event.snapshot[0]._oid, {
-          taggedWith: ['github', `github-${number}`],
-          links: [{ name: 'Github Issue', url }],
-        });
-      });
   }
 };
 
@@ -84,6 +62,9 @@ function ensureOptionsAreValid(options) {
 }
 
 function validateOptions(options) {
+  if (!options.connection) {
+    return ['Missing connection option'];
+  }
   let errors = [];
   const missingConnectionErrors = validatePropsExists(
     options.connection,

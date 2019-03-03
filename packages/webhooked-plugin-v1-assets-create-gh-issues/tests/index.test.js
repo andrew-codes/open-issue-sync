@@ -24,7 +24,6 @@ beforeEach(() => {
         }),
       };
     }
-    return {};
   });
   this.v1Create = jest.fn();
   this.v1Update = jest.fn();
@@ -46,25 +45,20 @@ test('throws error if required options are not provided', async () => {
   } catch ({ message }) {
     expect(message).toBe('Missing options');
   }
-});
-
-test('throws error if when there is no connection information for v1 and/or gh', async () => {
   try {
-    await plugin(createGhRequest('created'), {
-      connection: {},
-      assetToLabel: {},
-    });
+    await plugin(createGhRequest('created'), {});
+  } catch ({ invalidOptions }) {
+    expect(invalidOptions).toContain('Missing connection option');
+  }
+  try {
+    await plugin(createGhRequest('created'), { connection: {} });
   } catch (error) {
     expect(error.invalidOptions).toContain('Missing v1 connection option');
     expect(error.invalidOptions).toContain('Missing gh connection option');
   }
-});
-
-test('throws error if when there is invalid connection information for v1 and/or gh', async () => {
   try {
     await plugin(createGhRequest('created'), {
       connection: { v1: {}, gh: {} },
-      assetToLabel: {},
     });
   } catch (error) {
     expect(error.invalidOptions).toContain(
@@ -84,121 +78,14 @@ test('throws error if when there is invalid connection information for v1 and/or
     expect(error.invalidOptions).toContain(
       'Invalid v1 connection hmacKey option',
     );
-  }
-});
-
-test('throws error if there is an invalid asset to label mapping option', async () => {
-  try {
-    await plugin(
-      createGhRequest('created'),
-      createOptionsWithValidConnection(),
-    );
-  } catch (error) {
     expect(error.invalidOptions).toContain(
       'Invalid Story asset to label mapping value',
     );
     expect(error.invalidOptions).toContain(
       'Invalid Defect asset to label mapping value',
     );
-  }
-});
-test('throws error if there is an invalid scope option', async () => {
-  try {
-    await plugin(
-      createGhRequest('created'),
-      createOptionsWithValidConnection(),
-    );
-  } catch (error) {
     expect(error.invalidOptions).toContain('Invalid scope option');
   }
-});
-test('throws error if there is an invalid webhookId option', async () => {
-  try {
-    await plugin(
-      createGhRequest('created'),
-      createOptionsWithValidConnection(),
-    );
-  } catch (error) {
-    expect(error.invalidOptions).toContain('Invalid webhookId option');
-  }
-});
-
-test('labeling a gh issue as a story will create a Story asset V1 in the configured scope, on the configured team, tagged with the gh issue identifier, and a link back to the github issue', async () => {
-  const scope = 'Scope:1';
-  const name = 'some title';
-  const url = 'some url';
-  const team = 'Team:102';
-  const _oid = 'Story:1234';
-  const issueNumber = 123;
-  const request = createGhRequest('labeled', {
-    issue: { number: issueNumber, title: name, url },
-    label: { name: 'story' },
-  });
-  this.v1Create.mockReturnValue({ _oid });
-  v1Matcher.isRequestFromV1.mockReturnValue(false);
-  when(ghMatcher.matchesActions)
-    .calledWith(request, ['labeled'], 'ghKey')
-    .mockReturnValue(true);
-
-  await plugin(
-    request,
-    createOptionsWithValidConnection({
-      assetToLabel: { Defect: 'defect', Story: 'story' },
-      scope,
-      team,
-      webhookId: 'v1 payload identifier',
-    }),
-  );
-
-  expect(this.v1Create).toBeCalledWith('Story', {
-    links: { name: 'Github Issue', url },
-    name,
-    scope,
-    taggedWith: [`github-${issueNumber}`, 'github'],
-    team,
-  });
-  expect(this.ghEditIssue).toBeCalledWith(issueNumber, {
-    labels: [`v1-${_oid}`, 'v1'],
-  });
-});
-
-test('labeling a gh issue as a defect will create a Defect asset V1 in the configured scope, on the configured team, tagged with the github issue identifier, and a link back to the github issue', async () => {
-  const scope = 'Scope:1';
-  const name = 'some title';
-  const url = 'some url';
-  const team = 'Team:102';
-  const _oid = 'Defect:1234';
-  const issueNumber = 123;
-  const request = createGhRequest('labeled', {
-    issue: { number: issueNumber, title: name, url },
-    label: { name: 'defect' },
-  });
-  this.v1Create.mockReturnValue({ _oid });
-  v1Matcher.isRequestFromV1.mockReturnValue(false);
-  when(ghMatcher.matchesActions)
-    .calledWith(request, ['labeled'], 'ghKey')
-    .mockReturnValue(true);
-
-  await plugin(
-    request,
-    createOptionsWithValidConnection({
-      assetToLabel: { Defect: 'defect', Story: 'story' },
-      scope,
-      team,
-      webhookId: 'v1 payload identifier',
-    }),
-  );
-
-  expect(this.v1Create).toBeCalledWith('Defect', {
-    links: { name: 'Github Issue', url },
-    name,
-    scope,
-    taggedWith: [`github-${issueNumber}`, 'github'],
-    team,
-  });
-  expect(this.ghEditIssue).toBeCalledWith(issueNumber, {
-    labels: [`v1-${_oid}`, 'v1'],
-  });
 });
 
 test('tagging a Story or Defect already containing a github issue identifier with github will not create a new github issue', async () => {
@@ -408,6 +295,14 @@ test('V1 payloads with multiple changed assets will create github issues only fo
   });
 });
 
+function createV1Request(eventType, webhookId, data = {}) {
+  return {
+    body: {
+      events: [{ eventType, webhookId, ...data }],
+    },
+  };
+}
+
 function createGhRequest(action, data = {}) {
   return {
     body: {
@@ -433,12 +328,5 @@ function createOptionsWithValidConnection(data = {}) {
       },
     },
     ...data,
-  };
-}
-function createV1Request(eventType, webhookId, data = {}) {
-  return {
-    body: {
-      events: [{ eventType, webhookId, ...data }],
-    },
   };
 }

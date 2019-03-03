@@ -1,0 +1,20 @@
+{
+  "name": "@andrew-codes/webhooked-preset-issue-sync-gh-v1",
+  "repository": "git@github.com:andrew-codes/open-issue-sync.git",
+  "version": "0.0.1",
+  "main": "src/index.js",
+  "author": "Andrew Smith <andrew@andrew.codes>",
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=10.15.1",
+    "yarn": "^1.3.2"
+  },
+  "dependencies": {
+    "@andrew-codes/webhooked-plugin-issues-create-v1-assets": "^0.0.1",
+    "@andrew-codes/webhooked-plugin-v1-assets-create-gh-issues": "^0.0.1"
+  }
+}
