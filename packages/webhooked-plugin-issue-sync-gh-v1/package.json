@@ -1,5 +1,5 @@
 {
-  "name": "@andrew-codes/webhooked-plugin-issue-creation-gh-v1",
+  "name": "@andrew-codes/webhooked-plugin-issue-sync-gh-v1",
   "repository": "git@github.com:andrew-codes/open-issue-sync.git",
   "version": "0.0.1",
   "main": "src/index.js",
