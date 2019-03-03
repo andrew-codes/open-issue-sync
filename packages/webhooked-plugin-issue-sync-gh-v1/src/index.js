@@ -33,7 +33,7 @@ module.exports = async (req, options) => {
   if (matchesActions(req, ['labeled'], options.connection.gh.hmacKey)) {
     const matchedAssetLabelMapping = Object.entries(options.assetToLabel).find(
       mapping => {
-        const [_, value] = mapping;
+        const value = mapping[1];
         return value === req.body.label.name;
       },
     );

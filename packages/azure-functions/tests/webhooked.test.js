@@ -10,7 +10,6 @@ beforeEach(() => {
     handle,
   });
 });
-
 test('configures webhooked and handles request', async () => {
   const request = {
     headers: {},
