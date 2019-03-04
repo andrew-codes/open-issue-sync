@@ -15,7 +15,8 @@
   },
   "scripts": {
     "bootstrap": "lerna bootstrap",
-    "start": "lerna exec --scope @andrew-codes/azure-functions \"func host start --build\"",
+    "start:express": "lerna exec --scope @andrew-codes/app-express --stream \"node src/index.js\"",
+    "start:azure": "lerna exec --scope @andrew-codes/app-azure-functions --stream \"func host start --build\"",
     "test": "jest",
     "lint": "eslint --print-config .eslintrc.json | eslint-config-prettier-check && eslint ."
   },

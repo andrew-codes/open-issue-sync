@@ -62,9 +62,14 @@ webhooked({
 - install node@>=10.15.1
 - yarn@^1.3.2
 - `yarn && yarn bootstrap`
-- `yarn start`; look in console for address
+- `yarn start:express`; express based implementation
+- `yarn start:azure`; will start Azure Function locally; look in console for address
 - `yarn test`; runs tests
 - `yarn lint`
+
+### Environment Variables for `yarn start:*`
+
+{needs content}
 
 ## Packages Overview
 
