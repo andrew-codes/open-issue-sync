@@ -1,7 +1,5 @@
-const fetch = require('node-fetch');
-const fetchConnector = require('@andrew-codes/v1sdk-fetch-connector');
+const createV1 = require('@andrew-codes/v1sdk-fetch');
 const GitHub = require('github-api');
-const v1sdk = require('v1sdk').default;
 const { isEmpty } = require('lodash');
 const {
   matchesActions,
@@ -16,14 +14,17 @@ const {
 module.exports = async (req, options) => {
   ensureOptionsAreValid(options);
   const { scope, team } = options;
-  const { v1, gh } = options.connection;
-  const connectedSdk = fetchConnector(fetch)(v1sdk);
-  const v1Api = connectedSdk(
-    v1.host,
-    v1.instance,
-    v1.port,
-    v1.isHttps,
-  ).withAccessToken(v1.token);
+  const {
+    v1: { host, instance, isHttps, port, token },
+    gh,
+  } = options.connection;
+  const v1Api = createV1({
+    host,
+    instance,
+    port,
+    isHttps,
+    token,
+  });
   const ghApi = new GitHub({ token: gh.token });
   const issues = ghApi.getIssues();
 

@@ -1,12 +1,12 @@
 jest
-  .mock('@andrew-codes/v1sdk-fetch-connector')
+  .mock('@andrew-codes/v1sdk-fetch')
   .mock('v1sdk')
   .mock('github-api')
   .mock('@andrew-codes/webhooked-github-request-matchers')
   .mock('@andrew-codes/webhooked-v1-request-matchers');
 const { when } = require('jest-when');
 const plugin = require('../src/index');
-const connector = require('@andrew-codes/v1sdk-fetch-connector');
+const createV1 = require('@andrew-codes/v1sdk-fetch');
 const ghMatcher = require('@andrew-codes/webhooked-github-request-matchers');
 const v1Matcher = require('@andrew-codes/webhooked-v1-request-matchers');
 const github = require('github-api');
@@ -27,16 +27,18 @@ beforeEach(() => {
   });
   this.v1Create = jest.fn();
   this.v1Update = jest.fn();
-  this.sdkConstructor = jest.fn();
-  this.withAccessToken = jest.fn();
-  when(this.withAccessToken)
-    .calledWith('v1token')
-    .mockReturnValue({ create: this.v1Create, update: this.v1Update });
-  this.connectedSdk = jest.fn().mockReturnValue({
-    withAccessToken: this.withAccessToken,
-  });
-  this.sdkConstructor.mockReturnValue(this.connectedSdk);
-  connector.mockReturnValue(this.sdkConstructor);
+  when(createV1)
+    .calledWith({
+      host: 'host',
+      instance: 'instance',
+      port: 443,
+      isHttps: true,
+      token: 'v1token',
+    })
+    .mockReturnValue({
+      create: this.v1Create,
+      update: this.v1Update,
+    });
 });
 
 test('throws error if required options are not provided', async () => {
