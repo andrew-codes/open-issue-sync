@@ -1,8 +1,8 @@
 {
-  "name": "open-issue-sync",
+  "name": "webhooked",
   "version": "0.0.1",
   "description": "\"Maintain open source issues with VersionOne.\"",
-  "repository": "git@github.com:andrew-codes/open-issue-sync.git",
+  "repository": "git@github.com:andrew-codes/webhooked.git",
   "author": "Andrew Smith <andrew@andrew.codes>",
   "license": "MIT",
   "private": true,

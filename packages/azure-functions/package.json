@@ -1,6 +1,6 @@
 {
   "name": "@andrew-codes/azure-functions",
-  "repository": "git@github.com:andrew-codes/open-issue-sync.git",
+  "repository": "git@github.com:andrew-codes/webhooked.git",
   "version": "0.0.1",
   "main": "src/index.js",
   "author": "Andrew Smith <andrew@andrew.codes>",
