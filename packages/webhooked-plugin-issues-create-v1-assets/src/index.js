@@ -1,4 +1,4 @@
-const fetch = require('fetch-node');
+const fetch = require('node-fetch');
 const fetchConnector = require('@andrew-codes/v1sdk-fetch-connector');
 const GitHub = require('github-api');
 const v1sdk = require('v1sdk').default;

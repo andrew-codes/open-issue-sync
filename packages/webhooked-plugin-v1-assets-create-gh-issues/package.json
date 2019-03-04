@@ -17,9 +17,9 @@
     "@andrew-codes/v1sdk-fetch-connector": "^0.0.1",
     "@andrew-codes/webhooked-utils": "^0.0.1",
     "@andrew-codes/webhooked-v1-request-matchers": "^0.0.1",
-    "fetch-node": "^0.0.1",
     "github-api": "^3.0.0",
     "lodash": "^4.17.11",
+    "node-fetch": "^2.3.0",
     "v1sdk": "^2.3.0"
   }
 }

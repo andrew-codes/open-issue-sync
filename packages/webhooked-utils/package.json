@@ -16,8 +16,8 @@
   "dependencies": {
     "@andrew-codes/v1sdk-fetch-connector": "^0.0.1",
     "@andrew-codes/webhooked-github-request-matchers": "^0.0.1",
-    "fetch-node": "^0.0.1",
     "lodash": "^4.17.11",
+    "node-fetch": "^2.3.0",
     "v1sdk": "^2.3.0"
   }
 }
